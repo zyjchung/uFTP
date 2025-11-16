@@ -21,7 +21,7 @@ ENDFLAG=
 #ENDFLAG=-static
 
 #FOR RELEASE
-CFLAGSTEMP=-c -Wall -Wno-unused-variable -Wno-unused-but-set-variable -I.
+CFLAGSTEMP=-c -Wall -Wno-unused-variable -Wno-unused-but-set-variable -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -I.
 
 OPTIMIZATION=-O3
 HEADERS=-I
