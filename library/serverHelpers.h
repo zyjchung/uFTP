@@ -25,7 +25,7 @@
 #ifndef SERVER_HELPERS_H
 #define SERVER_HELPERS_H
 
-int handleThreadReuse(ftpDataType *data, int socketId);
+void handleThreadReuse(ftpDataType *data, int socketId);
 void cancelWorker(ftpDataType *data, int clientId);
 
 #endif

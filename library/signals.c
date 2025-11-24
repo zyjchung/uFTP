@@ -32,34 +32,10 @@
 #include "../debugHelper.h"
 #include "log.h"
 
-static void ignore_sigpipe(void);
-
 /* Catch Signal Handler functio */
 void signal_callback_handler(int signum) 
 {
     my_printf("Caught signal SIGPIPE %d\n",signum);
-}
-
-static void ignore_sigpipe(void)
-{
-    // ignore SIGPIPE (or else it will bring our program down if the client
-    // closes its socket).
-    // NB: if running under gdb, you might need to issue this gdb command:
-    //          handle SIGPIPE nostop noprint pass
-    //     because, by default, gdb will stop our program execution (which we
-    //     might not want).
-    struct sigaction sa;
-
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = SIG_IGN;
-
-    if (sigemptyset(&sa.sa_mask) < 0 || sigaction(SIGPIPE, &sa, 0) < 0) 
-    {
-        perror("Could not ignore the SIGPIPE signal");
-        my_printfError("Could not ignore the SIGPIPE signal");
-        LOG_INFO("Could not ignore the SIGPIPE signal");
-        exit(0);
-    }
 }
 
 void onUftpClose(int sig)

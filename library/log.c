@@ -92,7 +92,11 @@ static void* logThread(void* arg) {
 
         char dateStr[11], logFilePath[PATH_MAX];
         strftime(dateStr, sizeof(dateStr), "%Y-%m-%d", tm_now);
-        snprintf(logFilePath, sizeof(logFilePath), "%s%s%s", logFolder, LOG_FILENAME_PREFIX, dateStr);
+        int ret = snprintf(logFilePath, sizeof(logFilePath), "%s%s%s", logFolder, LOG_FILENAME_PREFIX, dateStr);
+        if (ret >= sizeof(logFilePath)) {
+            my_printfError("Log file path too long");
+            continue;
+        }
 
         int currentDay = tm_now->tm_mday;
         if (currentDay != lastDay) {
@@ -112,6 +116,7 @@ static void* logThread(void* arg) {
         }
         while (workerQueue.Size > 0) workerQueue.PopBack(&workerQueue);
     }
+    return NULL;
 }
 
 int logInit(const char* folder, int numberOfLogFiles) {

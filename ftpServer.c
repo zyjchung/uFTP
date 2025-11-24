@@ -138,7 +138,7 @@ void deallocateMemory(void)
     DYNMEM_freeAll(&ftpData.generalDynamicMemoryTable);
 
     my_printf("\n\nUsed memory at end: %lld", DYNMEM_GetTotalMemory());
-    my_printf("\n ftpData.generalDynamicMemoryTable = %ld", ftpData.generalDynamicMemoryTable);
+    my_printf("\n ftpData.generalDynamicMemoryTable = %p", ftpData.generalDynamicMemoryTable);
 
     #ifdef OPENSSL_ENABLED
     SSL_CTX_free(ftpData.serverCtx);

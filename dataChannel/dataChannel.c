@@ -67,8 +67,7 @@ void workerCleanup(cleanUpWorkerArgs *args)
 	//my_printf("\nWorker %d cleanup", theSocketId);
 
 	#ifdef OPENSSL_ENABLED
-    int error;
-    error = fcntl(ftpData->clients[theSocketId].workerData.socketConnection, F_SETFL, O_NONBLOCK);
+    fcntl(ftpData->clients[theSocketId].workerData.socketConnection, F_SETFL, O_NONBLOCK);
 
 	if (ftpData->clients[theSocketId].dataChannelIsTls == 1)
 	{
@@ -141,7 +140,7 @@ static int processStorAppe(cleanUpWorkerArgs *args)
     const char *filePath = ftpData->clients[theSocketId].fileToStor.text;
     const char *command = ftpData->clients[theSocketId].workerData.theCommandReceived;
 
-    int isAppe = compareStringCaseInsensitive(command, "APPE", strlen("APPE")) == 1;
+    int isAppe = compareStringCaseInsensitive((char *)command, "APPE", strlen("APPE")) == 1;
 
     #ifdef LARGE_FILE_SUPPORT_ENABLED
         if (isAppe) {
@@ -380,10 +379,9 @@ static int processRetr(cleanUpWorkerArgs *args)
 {
     ftpDataType *ftpData = args->ftpData;
 	int theSocketId = args->socketId;
-	int returnCode = 0;
     long long int writenSize = 0, writeReturn = 0;
 
-    my_printf("\n ftpData->clients[theSocketId].workerData.retrRestartAtByte = %d", ftpData->clients[theSocketId].workerData.retrRestartAtByte);
+    my_printf("\n ftpData->clients[theSocketId].workerData.retrRestartAtByte = %lld", ftpData->clients[theSocketId].workerData.retrRestartAtByte);
 
     writenSize = writeRetrFile(ftpData, theSocketId, ftpData->clients[theSocketId].workerData.retrRestartAtByte, ftpData->clients[theSocketId].workerData.theStorFile);
     ftpData->clients[theSocketId].workerData.retrRestartAtByte = 0;
@@ -441,16 +439,14 @@ void *connectionWorkerHandle(cleanUpWorkerArgs *args)
 {
   ftpDataType *ftpData = args->ftpData;
   int theSocketId = args->socketId;
-  int returnCode = 0;
 
   // Enable cancellation for this thread
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
   pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 
-  pthread_cleanup_push(workerCleanup,  args);
+  pthread_cleanup_push((void (*)(void *))workerCleanup,  args);
   ftpData->clients[theSocketId].workerData.threadIsAlive = 1;
   ftpData->clients[theSocketId].workerData.threadHasBeenCreated = 1;
-  int returnCode;
 
   my_printf("\n -----------------  WORKER CREATED --------------!");
 

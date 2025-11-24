@@ -44,6 +44,7 @@
 
 #include "debug_defines.h"
 
+#ifdef IPV6_ENABLED
 static int is_ipv4_mapped_ipv6(const char *ip);
 
 int is_ipv4_mapped_ipv6(const char *ip) {
@@ -57,6 +58,7 @@ int is_ipv4_mapped_ipv6(const char *ip) {
   // Check if the remaining part is a valid IPv4 address using existing logic
   return 1;
 }
+#endif
 
 int socketPrintf(ftpDataType * ftpData, int clientId, const char *__restrict __fmt, ...)
 {
@@ -884,7 +886,6 @@ void fdRemove(ftpDataType * ftpData, int index)
 
 void closeSocket(ftpDataType * ftpData, int processingSocket)
 {
-	int theReturnCode = 0;
 
 #ifdef OPENSSL_ENABLED
 
@@ -893,7 +894,7 @@ void closeSocket(ftpDataType * ftpData, int processingSocket)
 		if(ftpData->clients[processingSocket].workerData.passiveModeOn == 1)
 		{
 			my_printf("\nSSL worker Shutdown 1");
-			theReturnCode = SSL_shutdown(ftpData->clients[processingSocket].ssl);
+			int theReturnCode = SSL_shutdown(ftpData->clients[processingSocket].ssl);
 			my_printf("\nnSSL worker Shutdown 1 return code : %d", theReturnCode);
 
 			if (theReturnCode < 0)
@@ -917,7 +918,7 @@ void closeSocket(ftpDataType * ftpData, int processingSocket)
 
     //Close the socket
     shutdown(ftpData->clients[processingSocket].socketDescriptor, SHUT_RDWR);
-    theReturnCode = close(ftpData->clients[processingSocket].socketDescriptor);
+    close(ftpData->clients[processingSocket].socketDescriptor);
 
     resetClientData(ftpData, processingSocket, 0);
     //resetWorkerData(ftpData, processingSocket, 0);
@@ -1033,10 +1034,8 @@ int getAvailableClientSocketIndex(ftpDataType * ftpData)
 
 #ifdef IPV6_ENABLED
 
-#warning IPV6 IS ENABLED
 int evaluateClientSocketConnection(ftpDataType * ftpData)
 {
-	char str[INET6_ADDRSTRLEN];
 
     if (FD_ISSET(ftpData->connectionData.theMainSocket, &ftpData->connectionData.rset))
     {
@@ -1045,12 +1044,12 @@ int evaluateClientSocketConnection(ftpDataType * ftpData)
         {
             if ((ftpData->clients[availableSocketIndex].socketDescriptor = accept(ftpData->connectionData.theMainSocket, (struct sockaddr *)&ftpData->clients[availableSocketIndex].client_sockaddr_in, (socklen_t*)&ftpData->clients[availableSocketIndex].sockaddr_in_size)) !=- 1)
             {
-                int error, numberOfConnectionFromSameIp, i;
+                int numberOfConnectionFromSameIp, i;
                 numberOfConnectionFromSameIp = 0;
                 ftpData->connectedClients++;
                 ftpData->clients[availableSocketIndex].socketIsConnected = 1;
 
-                error = fcntl(ftpData->clients[availableSocketIndex].socketDescriptor, F_SETFL, O_NONBLOCK);
+                fcntl(ftpData->clients[availableSocketIndex].socketDescriptor, F_SETFL, O_NONBLOCK);
 
                 fdAdd(ftpData, availableSocketIndex);
 
@@ -1112,7 +1111,7 @@ int evaluateClientSocketConnection(ftpDataType * ftpData)
                 if (ftpData->ftpParameters.maximumConnectionsPerIp > 0 &&
                     numberOfConnectionFromSameIp >= ftpData->ftpParameters.maximumConnectionsPerIp)
                 {
-                	int theReturnCode = socketPrintf(ftpData, availableSocketIndex, "sss", "530 too many connection from your ip address ", ftpData->clients[availableSocketIndex].clientIpAddress, " \r\n");
+                	socketPrintf(ftpData, availableSocketIndex, "sss", "530 too many connection from your ip address ", ftpData->clients[availableSocketIndex].clientIpAddress, " \r\n");
                     ftpData->clients[availableSocketIndex].closeTheClient = 1;
 					LOGF("%stoo many connection from ip address: %s maximum allowed: %d", LOG_SECURITY_PREFIX, ftpData->clients[availableSocketIndex].clientIpAddress, ftpData->ftpParameters.maximumConnectionsPerIp); 
                 }
@@ -1144,11 +1143,10 @@ int evaluateClientSocketConnection(ftpDataType * ftpData)
 			socklen_t socketRefuse_in_size = sizeof(socketRefuse_sockaddr_in);
             if ((socketRefuseFd = accept(ftpData->connectionData.theMainSocket, (struct sockaddr *)&socketRefuse_sockaddr_in, &socketRefuse_in_size))!=-1)
             {
-            	int theReturnCode = 0;
                 char *messageToWrite = "10068 Server reached the maximum number of connection, please try later.\r\n";
                 write(socketRefuseFd, messageToWrite, strlen(messageToWrite));
                 shutdown(socketRefuseFd, SHUT_RDWR);
-                theReturnCode = close(socketRefuseFd);
+                close(socketRefuseFd);
             }
 
             return 0;
@@ -1172,16 +1170,16 @@ int evaluateClientSocketConnection(ftpDataType * ftpData)
         {
             if ((ftpData->clients[availableSocketIndex].socketDescriptor = accept(ftpData->connectionData.theMainSocket, (struct sockaddr *)&ftpData->clients[availableSocketIndex].client_sockaddr_in, (socklen_t*)&ftpData->clients[availableSocketIndex].sockaddr_in_size))!=-1)
             {
-                int error, numberOfConnectionFromSameIp, i;
+                int numberOfConnectionFromSameIp, i;
                 numberOfConnectionFromSameIp = 0;
                 ftpData->connectedClients++;
                 ftpData->clients[availableSocketIndex].socketIsConnected = 1;
 
-                error = fcntl(ftpData->clients[availableSocketIndex].socketDescriptor, F_SETFL, O_NONBLOCK);
+                fcntl(ftpData->clients[availableSocketIndex].socketDescriptor, F_SETFL, O_NONBLOCK);
 
                 fdAdd(ftpData, availableSocketIndex);
 
-                error = getsockname(ftpData->clients[availableSocketIndex].socketDescriptor, (struct sockaddr *)&ftpData->clients[availableSocketIndex].server_sockaddr_in, (socklen_t*)&ftpData->clients[availableSocketIndex].sockaddr_in_server_size);
+                getsockname(ftpData->clients[availableSocketIndex].socketDescriptor, (struct sockaddr *)&ftpData->clients[availableSocketIndex].server_sockaddr_in, (socklen_t*)&ftpData->clients[availableSocketIndex].sockaddr_in_server_size);
                 inet_ntop(AF_INET,
                           &(ftpData->clients[availableSocketIndex].server_sockaddr_in.sin_addr),
                           ftpData->clients[availableSocketIndex].serverIpAddress,
@@ -1219,9 +1217,8 @@ int evaluateClientSocketConnection(ftpDataType * ftpData)
                 if (ftpData->ftpParameters.maximumConnectionsPerIp > 0 &&
                     numberOfConnectionFromSameIp >= ftpData->ftpParameters.maximumConnectionsPerIp)
                 {
-                	int theReturnCode = socketPrintf(ftpData, availableSocketIndex, "sss", "530 too many connection from your ip address ", ftpData->clients[availableSocketIndex].clientIpAddress, " \r\n");
+                	socketPrintf(ftpData, availableSocketIndex, "sss", "530 too many connection from your ip address ", ftpData->clients[availableSocketIndex].clientIpAddress, " \r\n");
                     ftpData->clients[availableSocketIndex].closeTheClient = 1;
-                    char
 					LOGF("%sToo many connection from %s max per ip is %d", LOG_SECURITY_PREFIX, ftpData->clients[availableSocketIndex].clientIpAddress, ftpData->ftpParameters.maximumConnectionsPerIp); 
                 }
                 else
@@ -1252,11 +1249,10 @@ int evaluateClientSocketConnection(ftpDataType * ftpData)
             struct sockaddr_in socketRefuse_sockaddr_in;
             if ((socketRefuseFd = accept(ftpData->connectionData.theMainSocket, (struct sockaddr *)&socketRefuse_sockaddr_in, (socklen_t*)&socketRefuse_in_size))!=-1)
             {
-            	int theReturnCode = 0;
                 char *messageToWrite = "10068 Server reached the maximum number of connection, please try later.\r\n";
                 write(socketRefuseFd, messageToWrite, strlen(messageToWrite));
                 shutdown(socketRefuseFd, SHUT_RDWR);
-                theReturnCode = close(socketRefuseFd);
+                close(socketRefuseFd);
             }
 
             return 0;
@@ -1311,6 +1307,7 @@ int acceptSSLConnection(int theSocketId, ftpDataType * ftpData)
 
     if (session != NULL) 
     {
+        #ifdef ENABLE_PRINTF
         unsigned int len;
         const unsigned char *id = SSL_SESSION_get_id(session, &len);
 
@@ -1319,6 +1316,9 @@ int acceptSSLConnection(int theSocketId, ftpDataType * ftpData)
             my_printf("\n%02X", id[i]);
         }
         my_printf("\n");
+        #else
+        my_printf("Trying to reuse SSL Session from control connection\n");
+        #endif
 
         SSL_set_session(ssl, session);
     } else {

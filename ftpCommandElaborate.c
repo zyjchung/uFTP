@@ -315,7 +315,7 @@ int parseCommandPass(ftpDataType *data, int socketId)
 
 int parseCommandAuth(ftpDataType *data, int socketId)
 {
-    int returnCode, returnCodeTls;
+    int returnCode;
     my_printf("-- AUTH TLS --");
 
 #ifndef OPENSSL_ENABLED
@@ -348,7 +348,7 @@ int parseCommandAuth(ftpDataType *data, int socketId)
         return FTP_COMMAND_PROCESSED_WRITE_ERROR;
     }
 
-    returnCodeTls = SSL_accept(data->clients[socketId].ssl);
+    int returnCodeTls = SSL_accept(data->clients[socketId].ssl);
     data->clients[socketId].tlsNegotiatingTimeStart = (int)time(NULL);
 
     if (returnCodeTls <= 0)
@@ -485,9 +485,9 @@ int parseCommandProt(ftpDataType *data, int socketId)
 
 int parseCommandCcc(ftpDataType *data, int socketId)
 {
+#ifdef OPENSSL_ENABLED
     int returnCode;
 
-#ifdef OPENSSL_ENABLED
     if (!data->clients[socketId].tlsIsEnabled) {
         return ftpReplyOrError(data, socketId, "s", "533 Control connection not encrypted\r\n");
     }
@@ -501,18 +501,14 @@ int parseCommandCcc(ftpDataType *data, int socketId)
 
     SSL_shutdown(data->clients[socketId].ssl);  // Clean shutdown
     data->clients[socketId].tlsIsEnabled = 0;   // Mark as plaintext
-#endif
-
-#ifndef OPENSSL_ENABLED
+    return FTP_COMMAND_PROCESSED;
+#else
     return ftpReplyOrError(data, socketId, "s", "502 Command not supported\r\n");
 #endif
-
-    return FTP_COMMAND_PROCESSED;
 }
 
 int parseCommandPbsz(ftpDataType *data, int socketId)
 {
-    int returnCode;
     char *thePbszSize = getFtpCommandArg("PBSZ", data->clients[socketId].theCommandReceived, 0);
 
     // PBSZ requires TLS session active
@@ -556,7 +552,6 @@ int parseCommandModeS(ftpDataType *data, int socketId)
 int parseCommandPasv(ftpDataType *data, int socketId)
 {
     /* Create worker thread */
-    void *pReturn;
     int returnCode;
 
     if(data->clients[socketId].isIpV6 == 1)
@@ -580,7 +575,7 @@ int parseCommandPasv(ftpDataType *data, int socketId)
     workerArgs->ftpData = data;
     workerArgs->socketId = socketId;
 
-    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, connectionWorkerHandle, workerArgs);
+    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, (void *(*)(void *))connectionWorkerHandle, workerArgs);
 
     if (returnCode != 0)
     {
@@ -616,7 +611,7 @@ int parseCommandEpsv(ftpDataType *data, int socketId)
     workerArgs->ftpData = data;
     workerArgs->socketId = socketId;
 
-    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, connectionWorkerHandle, workerArgs);
+    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, (void *(*)(void *))connectionWorkerHandle, workerArgs);
 
     if (returnCode != 0)
     {
@@ -661,7 +656,7 @@ int parseCommandPort(ftpDataType *data, int socketId)
     workerArgs->ftpData = data;
     workerArgs->socketId = socketId;
 
-    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, connectionWorkerHandle, workerArgs);
+    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, (void *(*)(void *))connectionWorkerHandle, workerArgs);
 
     if (returnCode != 0)
     {
@@ -1069,7 +1064,7 @@ int parseCommandRetr(ftpDataType *data, int socketId)
         if ((checkUserFilePermissions(data->clients[socketId].fileToRetr.text, data->clients[socketId].login.ownerShip.uid, data->clients[socketId].login.ownerShip.gid) & FILE_PERMISSION_R) != FILE_PERMISSION_R)
         {
             LOGF("%sRETR no permissions file: %s", LOG_DEBUG_PREFIX, data->clients[socketId].fileToRetr.text);
-            int writeReturn = socketPrintf(data, socketId, "s", "550 no reading permission on the file\r\n");
+            socketPrintf(data, socketId, "s", "550 no reading permission on the file\r\n");
 
             if (returnCode <= 0) 
             {
@@ -1868,7 +1863,7 @@ int parseCommandRmd(ftpDataType *data, int socketId)
         {
             if ((checkUserFilePermissions(rmdFileName.text, data->clients[socketId].login.ownerShip.uid, data->clients[socketId].login.ownerShip.gid) & FILE_PERMISSION_W) == FILE_PERMISSION_W)
             {
-                char errorString[PATH_MAX];
+
 
                 returnStatus = rmdir(rmdFileName.text);
 
@@ -2191,7 +2186,7 @@ long long int writeRetrFile(ftpDataType *data, int theSocketId, long long int st
 {
     long long int readen = 0;
     long long int toReturn = 0, writtenSize = 0;
-    long long int theFileSize;
+
     char buffer[FTP_COMMAND_ELABORATE_CHAR_BUFFER];
     memset(buffer, 0, FTP_COMMAND_ELABORATE_CHAR_BUFFER);
 
@@ -2206,8 +2201,7 @@ long long int writeRetrFile(ftpDataType *data, int theSocketId, long long int st
         return -1;
     }
 
-    theFileSize = FILE_GetFileSize(retrFP);
-    my_printf("\ntheFileSize %lld", theFileSize);
+    // File size check removed as it's not used
 
     if (startFrom > 0)
     {
@@ -2537,7 +2531,7 @@ int parseCommandEprt(ftpDataType *data, int socketId)
     workerArgs->ftpData = data;
     workerArgs->socketId = socketId;
 
-    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, connectionWorkerHandle, workerArgs);
+    returnCode = pthread_create(&data->clients[socketId].workerData.workerThread, NULL, (void *(*)(void *))connectionWorkerHandle, workerArgs);
     if (returnCode != 0)
     {
         my_printfError("\nError in pthread_create %d", returnCode);

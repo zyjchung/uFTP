@@ -31,7 +31,7 @@
 #include "debugHelper.h"
 #include "library/log.h"
 
-int handleThreadReuse(ftpDataType *data, int socketId)
+void handleThreadReuse(ftpDataType *data, int socketId)
 {
     void *pReturn;
     int returnCode = 0;
@@ -52,8 +52,6 @@ int handleThreadReuse(ftpDataType *data, int socketId)
 
         data->clients[socketId].workerData.threadHasBeenCreated = 0;
     }
-
-    return returnCode;
 }
 
 void cancelWorker(ftpDataType *data, int clientId)

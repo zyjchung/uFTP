@@ -58,7 +58,7 @@
     long long int  FILE_GetFileSize(FILE *theFilePointer);
     long int FILE_GetAvailableSpace(const char* ThePath);
     long long int FILE_GetFileSizeFromPath(char *TheFileName);
-    int  FILE_IsFile(char *theFileName, int checkExist);
+    int  FILE_IsFile(const char *theFileName, int checkExist);
     int  FILE_IsDirectory (char *directory_path, int checkExist);
     int  FILE_IsLink (char *directory_path);
     void FILE_GetDirectoryInodeList(char * DirectoryInodeName, char *** InodeList, int * filesandfolders, int recursive, char* commandOps, int checkIfInodeExist, DYNMEM_MemoryTable_DataType ** memoryTable);
@@ -84,6 +84,6 @@
     int fd_is_valid(int fd);
     int checkUserFilePermissions(char *fileName, int uid, int gid);
     int checkParentDirectoryPermissions(char *fileName, int uid, int gid);
-    int FILE_CheckIfLinkExist(char * filename);
+    int FILE_CheckIfLinkExist(const char * filename);
 #define	GEN_FILE_MANAGEMENT_TYPES
 #endif

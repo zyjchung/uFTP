@@ -39,12 +39,12 @@ void DYNV_VectorGeneric_Init(DYNV_VectorGenericDataType *TheVectorGeneric)
     TheVectorGeneric->memoryTable = NULL;
 
     //Functions Pointers
-    TheVectorGeneric->DeleteAt = &DYNV_VectorGeneric_DeleteAt;
-    TheVectorGeneric->Destroy = &DYNV_VectorGeneric_Destroy;
-    TheVectorGeneric->PopBack = &DYNV_VectorGeneric_PopBack;
-    TheVectorGeneric->PushBack = &DYNV_VectorGeneric_PushBack;
-    TheVectorGeneric->SoftDestroy = &DYNV_VectorGeneric_SoftDestroy;
-    TheVectorGeneric->SoftPopBack = &DYNV_VectorGeneric_SoftPopBack;
+    TheVectorGeneric->DeleteAt = (void (*)(void *, int, void (*)(void *)))&DYNV_VectorGeneric_DeleteAt;
+    TheVectorGeneric->Destroy = (void (*)(void *, void (*)(struct DYNV_VectorGenericDataStruct *)))&DYNV_VectorGeneric_Destroy;
+    TheVectorGeneric->PopBack = (void (*)(void *, void (*)(void *)))&DYNV_VectorGeneric_PopBack;
+    TheVectorGeneric->PushBack = (void (*)(void *, void *, int))&DYNV_VectorGeneric_PushBack;
+    TheVectorGeneric->SoftDestroy = (void (*)(void *))&DYNV_VectorGeneric_SoftDestroy;
+    TheVectorGeneric->SoftPopBack = (void (*)(void *))&DYNV_VectorGeneric_SoftPopBack;
 }
 
 void DYNV_VectorGeneric_InitWithSearchFunction(DYNV_VectorGenericDataType *TheVectorGeneric, int (*SearchFunction)(void *TheVectorGeneric, void * TheElementData))
@@ -183,10 +183,10 @@ void DYNV_VectorString_Init(DYNV_VectorString_DataType *TheVector)
     TheVector->memoryTable = NULL;
 
     //Functions Pointers
-    TheVector->DeleteAt = &DYNV_VectorString_DeleteAt;
-    TheVector->Destroy = &DYNV_VectorString_Destroy;
-    TheVector->PopBack = &DYNV_VectorString_PopBack;
-    TheVector->PushBack = &DYNV_VectorString_PushBack;
+    TheVector->DeleteAt = (void (*)(void *, int))&DYNV_VectorString_DeleteAt;
+    TheVector->Destroy = (void (*)(void *))&DYNV_VectorString_Destroy;
+    TheVector->PopBack = (void (*)(void *))&DYNV_VectorString_PopBack;
+    TheVector->PushBack = (void (*)(void *, char *, int))&DYNV_VectorString_PushBack;
 }
 
 void DYNV_VectorString_PushBack(DYNV_VectorString_DataType *TheVector, char * TheString, int StringLenght)

@@ -77,7 +77,7 @@ int FILE_fdIsValid(int fd)
     return fcntl(fd, F_GETFD);
 }
 
-int FILE_CheckIfLinkExist(char * filename)
+int FILE_CheckIfLinkExist(const char * filename)
 {
 
   if (access(filename, F_OK) == 0) 
@@ -135,7 +135,6 @@ long long int FILE_GetFileSize(FILE *TheFilePointer)
 #endif
 
 #ifndef LARGE_FILE_SUPPORT_ENABLED
-	#warning LARGE FILE SUPPORT IS NOT ENABLED!
     long long int Prev = 0, TheFileSize = 0;
     Prev = ftell(TheFilePointer);
     fseek(TheFilePointer, 0, SEEK_END);
@@ -170,7 +169,6 @@ long long int FILE_GetFileSizeFromPath(char *TheFileName)
 #endif
 
 #ifndef LARGE_FILE_SUPPORT_ENABLED
-#warning LARGE FILE SUPPORT IS NOT ENABLED!
   if (FILE_IsFile(TheFileName, 1) == 1)
   {
       FILE *TheFilePointer;
@@ -204,7 +202,7 @@ int FILE_IsLink( char* path)
 }
 
 /* Check if a file is valid */
-int FILE_IsFile(char *TheFileName, int checkExist)
+int FILE_IsFile(const char *TheFileName, int checkExist)
 {
     FILE *TheFile;
 
@@ -217,7 +215,6 @@ int FILE_IsFile(char *TheFileName, int checkExist)
     #endif
 
     #ifndef LARGE_FILE_SUPPORT_ENABLED
-#warning LARGE FILE SUPPORT IS NOT ENABLED!
       TheFile = fopen(TheFileName, "rb");
     #endif
 
@@ -370,7 +367,6 @@ int FILE_GetStringFromFile(char * filename, char **file_content, DYNMEM_MemoryTa
     #endif
 
     #ifndef LARGE_FILE_SUPPORT_ENABLED
-#warning LARGE FILE SUPPORT IS NOT ENABLED!
         FILE *file = fopen(filename, "rb");
     #endif
 
@@ -671,7 +667,6 @@ int checkUserFilePermissions(char *fileName, int uid, int gid)
 
 	int filePermissions = FILE_PERMISSION_NO_RW;
     int returnCode = 0;
-    char *toReturn;
     struct stat info;
 
     if ((returnCode = stat(fileName, &info)) == -1)
@@ -730,7 +725,6 @@ char * FILE_GetGroupOwner(char *fileName, DYNMEM_MemoryTable_DataType **memoryTa
 {
     char *toReturn;
     struct stat info;
-    short int lp;
     struct group grp;
     struct group * grpptr=&grp;
     struct group * tempGrpPtr;
@@ -852,7 +846,6 @@ int FILE_doChownFromUidGidString (  const char *file_path,
 {
     uid_t          uid;
     gid_t          gid;
-    const struct group  *grp;
     uid = FILE_getUID(user_name);
     gid = FILE_getGID(group_name);
 
@@ -881,7 +874,6 @@ uid_t FILE_getUID(const char *user_name)
 
 gid_t FILE_getGID(const char *group_name)
 {
-    short int lp;
     struct group grp;
     struct group * grpptr=&grp;
     struct group * tempGrpPtr;

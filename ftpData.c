@@ -157,7 +157,6 @@ int getSafePath(dynamicStringDataType *safePath, char *theDirectoryName, loginDa
     char * theDirectoryNamePointer;
     theDirectoryNamePointer = theDirectoryName;
     char theDirectoryToCheck[PATH_MAX];
-    int theDirectoryToCheckIndex = 0;
     char resolved_path[PATH_MAX];
     char resolved_path_abs[PATH_MAX];
 
@@ -183,21 +182,26 @@ int getSafePath(dynamicStringDataType *safePath, char *theDirectoryName, loginDa
             theDirectoryNamePointer++;
 
         //Absolute requests must start from home path
-        strncpy(theDirectoryToCheck, loginData->homePath.text, PATH_MAX);
-        strncat(theDirectoryToCheck, theDirectoryNamePointer, PATH_MAX);
+        strncpy(theDirectoryToCheck, loginData->homePath.text, PATH_MAX - 1);
+        theDirectoryToCheck[PATH_MAX - 1] = '\0';
+        size_t remaining = PATH_MAX - strlen(theDirectoryToCheck) - 1;
+        strncat(theDirectoryToCheck, theDirectoryNamePointer, remaining);
         my_printf("\nAbsolute string: %s", theDirectoryToCheck);
     }
     else
     {
         //Relative directory, start from the current path
-        strncpy(theDirectoryToCheck, loginData->absolutePath.text, PATH_MAX);
+        strncpy(theDirectoryToCheck, loginData->absolutePath.text, PATH_MAX - 1);
+        theDirectoryToCheck[PATH_MAX - 1] = '\0';
 
         if (loginData->absolutePath.text[loginData->absolutePath.textLen-1] != '/')
         {
-            strncat(theDirectoryToCheck, "/", PATH_MAX);
+            size_t remaining = PATH_MAX - strlen(theDirectoryToCheck) - 1;
+            strncat(theDirectoryToCheck, "/", remaining);
         }
 
-        strncat(theDirectoryToCheck, theDirectoryNamePointer, PATH_MAX);
+        size_t remaining = PATH_MAX - strlen(theDirectoryToCheck) - 1;
+        strncat(theDirectoryToCheck, theDirectoryNamePointer, remaining);
         my_printf("\nRelative string: %s", theDirectoryToCheck);
     }
 
@@ -431,7 +435,7 @@ int writeListDataInfoToSocket(ftpDataType *ftpData, int clientId, int *filesNumb
                 ," "
                 ,data.fileSize
                 ," "
-                ,data.lastModifiedDataString == NULL? "Unknown" : data.lastModifiedDataString
+                ,data.lastModifiedDataString
                 ," "
                 ,data.finalStringPath == NULL? "Unknown" : data.finalStringPath
                 ,"\r\n");
@@ -467,7 +471,7 @@ int writeListDataInfoToSocket(ftpDataType *ftpData, int clientId, int *filesNumb
                 ," "
                 ,data.fileSize
                 ," "
-                ,data.lastModifiedDataString == NULL? "Unknown" : data.lastModifiedDataString
+                ,data.lastModifiedDataString
                 ," "
                 ,data.finalStringPath == NULL? "Unknown" : data.finalStringPath
                 ,"\r\n");
@@ -899,3 +903,5 @@ int isCharInString(char *theString, int stringLen, char theChar)
 
     return -1;
 }
+
+

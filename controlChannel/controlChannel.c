@@ -312,7 +312,7 @@ static int processCommand(int processingElement, ftpDataType *ftpData)
 
     for (int i = 0; i < COMMAND_MAP_SIZE; ++i)
     {
-        if (IS_CMD(ftpData->clients[processingElement].theCommandReceived, commandMap[i].command))
+        if (IS_CMD(ftpData->clients[processingElement].theCommandReceived, (char *)commandMap[i].command))
         {
             commandIndex = i;
             break;
@@ -334,8 +334,8 @@ static int processCommand(int processingElement, ftpDataType *ftpData)
         ftpData->clients[processingElement].workerData.retrRestartAtByte = 0;
     }
 
-    cleanDynamicStringDataType(&ftpData->clients[processingElement].ftpCommand.commandArgs, 0, ftpData->clients[processingElement].memoryTable);
-    cleanDynamicStringDataType(&ftpData->clients[processingElement].ftpCommand.commandOps, 0, ftpData->clients[processingElement].memoryTable);
+    cleanDynamicStringDataType(&ftpData->clients[processingElement].ftpCommand.commandArgs, 0, &ftpData->clients[processingElement].memoryTable);
+    cleanDynamicStringDataType(&ftpData->clients[processingElement].ftpCommand.commandOps, 0, &ftpData->clients[processingElement].memoryTable);
 
     if (ftpData->clients[processingElement].login.userLoggedIn == 0 &&
         (IS_NOT_CMD(ftpData->clients[processingElement].theCommandReceived, "USER") &&
@@ -352,7 +352,7 @@ static int processCommand(int processingElement, ftpDataType *ftpData)
     }
 
     my_printf("\n%s COMMAND RECEIVED", commandMap[commandIndex].command);
-    toReturn = commandMap[commandIndex].handler(ftpData, processingElement);
+    toReturn = ((int (*)(ftpDataType *, int))commandMap[commandIndex].handler)(ftpData, processingElement);
 
     ftpData->clients[processingElement].commandIndex = 0;
     memset(ftpData->clients[processingElement].theCommandReceived, 0, CLIENT_COMMAND_STRING_SIZE+1);

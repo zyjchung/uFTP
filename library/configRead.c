@@ -631,14 +631,14 @@ static int parseConfigurationFile(ftpParameters_DataType *ftpParameters, DYNV_Ve
     DYNV_VectorGeneric_Init(&ftpParameters->usersVector);
     while(1)
     {
-        int searchUserIndex, searchPasswordIndex, searchHomeIndex, searchUserOwnerIndex, searchGroupOwnerIndex, returnCode;
+        int searchUserIndex, searchPasswordIndex, searchHomeIndex, searchUserOwnerIndex, searchGroupOwnerIndex;
         usersParameters_DataType userData;
 
-        returnCode = snprintf(userX, PARAMETER_SIZE_LIMIT, "USER_%d", userIndex);
-        returnCode = snprintf(passwordX, PARAMETER_SIZE_LIMIT, "PASSWORD_%d", userIndex);
-        returnCode = snprintf(homeX, PARAMETER_SIZE_LIMIT, "HOME_%d", userIndex);
-        returnCode = snprintf(groupOwnerX, PARAMETER_SIZE_LIMIT, "GROUP_NAME_OWNER_%d", userIndex);
-        returnCode = snprintf(userOwnerX, PARAMETER_SIZE_LIMIT, "USER_NAME_OWNER_%d", userIndex);
+        snprintf(userX, PARAMETER_SIZE_LIMIT, "USER_%d", userIndex);
+        snprintf(passwordX, PARAMETER_SIZE_LIMIT, "PASSWORD_%d", userIndex);
+        snprintf(homeX, PARAMETER_SIZE_LIMIT, "HOME_%d", userIndex);
+        snprintf(groupOwnerX, PARAMETER_SIZE_LIMIT, "GROUP_NAME_OWNER_%d", userIndex);
+        snprintf(userOwnerX, PARAMETER_SIZE_LIMIT, "USER_NAME_OWNER_%d", userIndex);
         userIndex++;
         
         searchUserIndex = searchParameter(userX, parametersVector);
@@ -731,8 +731,8 @@ static int parseConfigurationFile(ftpParameters_DataType *ftpParameters, DYNV_Ve
     DYNV_VectorString_Init(&ftpParameters->blockedUsersVector);
     while(1)
     {
-        int searchUserIndex, returnCode;
-        returnCode = snprintf(userX, PARAMETER_SIZE_LIMIT, "BLOCK_USER_%d", userIndex);
+        int searchUserIndex;
+        snprintf(userX, PARAMETER_SIZE_LIMIT, "BLOCK_USER_%d", userIndex);
         userIndex++;
 
         searchUserIndex = searchParameter(userX, parametersVector);

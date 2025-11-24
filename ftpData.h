@@ -320,6 +320,8 @@ void resetClientData(ftpDataType *data, int clientId, int isInitialization);
 int compareStringCaseInsensitive(char *stringIn, char* stringRef, int stringLenght);
 int isCharInString(char *theString, int stringLen, char theChar);
 void destroyConfigurationVectorElement(DYNV_VectorGenericDataType *theVector);
+int isPortInUse(int port);
+void handleThreadReuse(ftpDataType *data, int clientId);
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,7 @@
 
 #include "ftpData.h"
 
-typedef int (*CommandHandler)(struct FtpDataType*, int);
+typedef int (*CommandHandler)(ftpDataType*, int);
 
 typedef struct {
     const char* command;
