@@ -1040,14 +1040,14 @@ int parseCommandRetr(ftpDataType *data, int socketId)
     {
         returnCode = socketPrintf(data, socketId, "s", "425 Use PORT or PASV first.\r\n");
 
-        if (returnCode <= 0) 
+        if (returnCode <= 0)
         {
             LOG_ERROR("socketPrintfError");
             return FTP_COMMAND_PROCESSED_WRITE_ERROR;
         }
 
         return FTP_COMMAND_PROCESSED;
-    }    
+    }
 
     theNameToRetr = getFtpCommandArg("RETR", data->clients[socketId].theCommandReceived, 0);
     cleanDynamicStringDataType(&data->clients[socketId].fileToRetr, 0, &data->clients[socketId].memoryTable);

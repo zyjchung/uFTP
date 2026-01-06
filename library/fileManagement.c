@@ -703,21 +703,16 @@ char * FILE_GetOwner(char *fileName, DYNMEM_MemoryTable_DataType **memoryTable)
     char *toReturn;
     struct stat info;
 
-    struct passwd pd;
-    struct passwd* pwdptr=&pd;
-    struct passwd* tempPwdPtr;
-    char pwdbuffer[200];
-    int  pwdlinelen = sizeof(pwdbuffer);
-
     if ((returnCode = stat(fileName, &info)) == -1)
-        return NULL;
+    {
+        toReturn = (char *) DYNMEM_malloc (8, memoryTable, "getowner");
+        strcpy(toReturn, "unknown");
+        return toReturn;
+    }
 
-    if ((getpwuid_r(info.st_uid, pwdptr, pwdbuffer, pwdlinelen, &tempPwdPtr))!=0)
-        return NULL;
-
-    toReturn = (char *) DYNMEM_malloc (strlen(pd.pw_name) + 1, memoryTable, "getowner");
-    strcpy(toReturn, pd.pw_name);
-
+    // Return numeric UID directly (getpwuid_r crashes in static builds)
+    toReturn = (char *) DYNMEM_malloc (16, memoryTable, "getowner");
+    snprintf(toReturn, 16, "%d", (int)info.st_uid);
     return toReturn;
 }
 
@@ -725,21 +720,17 @@ char * FILE_GetGroupOwner(char *fileName, DYNMEM_MemoryTable_DataType **memoryTa
 {
     char *toReturn;
     struct stat info;
-    struct group grp;
-    struct group * grpptr=&grp;
-    struct group * tempGrpPtr;
-    char grpbuffer[200];
-    int  grplinelen = sizeof(grpbuffer);
 
     if (stat(fileName, &info) == -1 )
-        return NULL;
+    {
+        toReturn = (char *) DYNMEM_malloc (8, memoryTable, "getowner");
+        strcpy(toReturn, "unknown");
+        return toReturn;
+    }
 
-    if ((getgrgid_r(info.st_gid,grpptr,grpbuffer,grplinelen,&tempGrpPtr))!=0)
-        return NULL;
-    
-    toReturn = (char *) DYNMEM_malloc (strlen(grp.gr_name) + 1, memoryTable, "getowner");
-    strcpy(toReturn, grp.gr_name);
-    
+    // Return numeric GID directly (getgrgid_r crashes in static builds)
+    toReturn = (char *) DYNMEM_malloc (16, memoryTable, "getowner");
+    snprintf(toReturn, 16, "%d", (int)info.st_gid);
     return toReturn;
 }
 

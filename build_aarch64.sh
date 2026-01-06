@@ -41,7 +41,6 @@ if [ "${BUILD_TYPE}" = "debug" ]; then
     make CC="${CROSS_COMPILER}" \
          CFLAGSTEMP="-c -Wall -I. -g -O0" \
          ENABLE_LARGE_FILE_SUPPORT="-D LARGE_FILE_SUPPORT_ENABLED -D _LARGEFILE64_SOURCE" \
-         ENABLE_IPV6_SUPPORT="-D IPV6_ENABLED" \
          ENABLE_PRINTF="-D ENABLE_PRINTF -D ENABLE_PRINTF_ERROR"
 else
     # Release build (optimized, static binary)
@@ -49,7 +48,6 @@ else
          CFLAGSTEMP="-c -Wall -I." \
          OPTIMIZATION="-O3" \
          ENABLE_LARGE_FILE_SUPPORT="-D LARGE_FILE_SUPPORT_ENABLED -D _LARGEFILE64_SOURCE" \
-         ENABLE_IPV6_SUPPORT="-D IPV6_ENABLED" \
          ENDFLAG="-static"
 fi
 
